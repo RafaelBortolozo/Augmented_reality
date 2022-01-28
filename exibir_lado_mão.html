@@ -33,11 +33,15 @@
       canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
       canvasCtx.drawImage(
           results.image, 0, 0, canvasElement.width, canvasElement.height);
+      
+/***********************************************************************************************/      
       if (results.multiHandLandmarks) {
         for(let hand of results.multiHandedness){
           if(hand.label === 'Right') console.log('Esquerda')
           if(hand.label === 'Left') console.log('Direita')
         }
+/***********************************************************************************************/    
+        
         for (const landmarks of results.multiHandLandmarks) {
           drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS,
                          {color: '#00FF00', lineWidth: 5});
