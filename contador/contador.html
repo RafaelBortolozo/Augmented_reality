@@ -10,9 +10,20 @@
         crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
     <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         .container {
             display: flex;
             flex-wrap: wrap;
+        }
+
+        .container div {
+            margin: 20px;
+            border-radius: 4px;
         }
 
         .input_video {
@@ -31,6 +42,7 @@
             font-size: 50px;
             font-family: Arial;
             font-weight: 1000;
+            margin-top: 15px;
             margin-left: 15px;
             padding: 7px;
             background-color: rgba(255, 255, 255, 0.7);
