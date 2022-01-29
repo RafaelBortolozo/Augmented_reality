@@ -73,18 +73,46 @@
     var counterElement = document.getElementById('counter');
     const canvasCtx = canvasElement.getContext('2d');
 
+/***********************************************************************************************/
+    function thumbDownDetector(hand, inverted_camera){
+        let side = hand[hand.length - 1].label
+
+        if (inverted_camera){
+            if (side === 'Left') {
+                side = 'Right'
+            } else if (side === 'Right') {
+                side = 'Left'
+            }
+        }
+        
+        let thumb_tip = hand[4]
+        let thumb_ip = hand[3]
+
+         if (side === 'Left') {
+            if (thumb_tip.x <= thumb_ip.x) return true
+        } else if (side === 'Right') {
+            if (thumb_tip.x >= thumb_ip.x) return true
+        }
+
+        return false
+    }
+
     function onResults(results) {
         canvasCtx.save();
         canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
         canvasCtx.drawImage(
             results.image, 0, 0, canvasElement.width, canvasElement.height);
 
-        /***********************************************************************************************/
         var counter = 0
+        let data = []
         if (results.multiHandLandmarks) {
-            console.log(results.multiHandLandmarks)
-            for (let hand of results.multiHandLandmarks) {
-                if (hand[4].y <= hand[3].y) counter += 1
+            
+            for (let i in results.multiHandLandmarks) {
+                data.push(results.multiHandLandmarks[i].concat(results.multiHandedness[i]))
+            }
+
+            for (let hand of data) {
+                if (thumbDownDetector(hand, true)) counter += 1
                 if (hand[8].y <= hand[7].y) counter += 1
                 if (hand[12].y <= hand[11].y) counter += 1
                 if (hand[16].y <= hand[15].y) counter += 1
@@ -92,7 +120,7 @@
             }
 
             counterElement.innerHTML = `Dedos levantados: ${counter}`
-            /***********************************************************************************************/
+            
 
             for (const landmarks of results.multiHandLandmarks) {
                 drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS,
@@ -104,6 +132,7 @@
         }
         canvasCtx.restore();
     }
+/***********************************************************************************************/
 
     const hands = new Hands({
         locateFile: (file) => {
