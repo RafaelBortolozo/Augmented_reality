@@ -9,12 +9,70 @@
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"
         crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/holistic/holistic.js" crossorigin="anonymous"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        .input_video,
+        .output_canvas {
+            transform: rotateY(180deg);
+            border-radius: 10px;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .container>div {
+            margin: 20px;
+        }
+
+        .output_canvas {
+            position: relative;
+            z-index: 1;
+        }
+
+        .output_video .glasses {
+            width: 1278px;
+            display: flex;
+            position: absolute;
+            z-index: 2;
+            justify-content: space-around;
+            margin-top: 15px;
+            background-color: red;
+        }
+
+        .output_video .glasses img {
+            width: 200px;
+            height: 100px;
+            padding: 7px;
+            border-radius: 7px;
+            background-color: rgb(212, 235, 255);
+        }
+
+        .output_video .glasses img.selected {
+            border: 7px solid tomato;
+        }
+    </style>
 </head>
 
 <body>
     <div class="container">
-        <video class="input_video"></video>
-        <canvas class="output_canvas" width="1280px" height="720px"></canvas>
+        <div>
+            <video class="input_video"></video>
+        </div>
+        <div class="output_video">
+            <div class="glasses">
+                <img id="2" class="selected" src="./assets/glasses2.png">
+                <img id="1" src="./assets/glasses1.png">
+                <img id="0" src="./assets/glasses0.png">
+            </div>
+            <canvas class="output_canvas" width="1278px" height="720px"></canvas>
+        </div>
     </div>
 </body>
 
@@ -24,6 +82,17 @@
     const videoElement = document.getElementsByClassName('input_video')[0];
     const canvasElement = document.getElementsByClassName('output_canvas')[0];
     const canvasCtx = canvasElement.getContext('2d');
+    const glassesElement = document.getElementById('0')
+    let point = null
+    let index_finger_tip = null
+    let breakLoop = false
+
+    function glassesSwitch(point) {
+        if (document.getElementById(point).className != 'selected') {
+            document.querySelector(".selected").classList.remove('selected');
+            document.getElementById(point).classList.add('selected')
+        }
+    }
 
     function onResults(results) {
         canvasCtx.save();
@@ -31,16 +100,30 @@
         canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
 
         if (results.faceLandmarks) {
-            let width = canvasElement.width;
-            let height = canvasElement.height;
+            console.log(results)
 
-            let beginX = results.faceLandmarks[46].x * width;
-            let endX = results.faceLandmarks[276].x * width;
-            let beginY = results.faceLandmarks[8].y * height;
-            let endY = results.faceLandmarks[197].y * height;
+            let beginX = results.faceLandmarks[156].x * canvasElement.width;
+            let endX = results.faceLandmarks[383].x * canvasElement.width;
+            let beginY = results.faceLandmarks[9].y * canvasElement.height;
+            let endY = results.faceLandmarks[5].y * canvasElement.height;
 
-            canvasCtx.fillStyle = `rgba(255, 221,0, 0.5)`
-            canvasCtx.fillRect(beginX, beginY, endX - beginX, endY - beginY)
+            if (results.rightHandLandmarks) {
+                index_finger_tip = results.rightHandLandmarks[8]
+                point = Math.floor((index_finger_tip.x * canvasElement.width) / 426);
+            } else if (results.leftHandLandmarks) {
+                index_finger_tip = results.leftHandLandmarks[8]
+                point = Math.floor((index_finger_tip.x * canvasElement.width) / 426);
+            }
+
+            if ((index_finger_tip != null) && (point != null)) {
+                if (((index_finger_tip.y * canvasElement.height) < glassesElement.height)) {
+                    glassesSwitch(point)
+                } else if ((index_finger_tip.y * canvasElement.height) >= glassesElement.height) {
+                }
+            }
+
+            let glassesSelected = document.querySelector(".selected")
+            canvasCtx.drawImage(glassesSelected, beginX, beginY, endX - beginX, endY - beginY)
         }
         canvasCtx.restore();
     }
@@ -65,7 +148,7 @@
         onFrame: async () => {
             await holistic.send({ image: videoElement });
         },
-        width: 1280,
+        width: 1278,
         height: 720
     });
     camera.start();
