@@ -94,12 +94,13 @@
     const canvasElement = document.getElementsByClassName('output_canvas')[0];
     const canvasCtx = canvasElement.getContext('2d');
 
-    const glassesElement = document.getElementById('0')
-    const pointsWithGlasses = [1,3,5]
-    let point = null
-    let index_finger_tip = null
-    let breakLoop = false
+    const pointsWithGlasses = [1,3,5] //IDs que contém imagem de oculos
+    let point = null    //ponto no canvas
+    let index_finger_tip = null //ponta do dedo indicador
+    let breakLoop = false   //quebrador de loop pra não ficar piscando
 
+    // função que recebe um ponto (id do oculos), remove a classe selected se 
+    // existir em alguma imagem e insere a classe com o mesmo nome no oculos desejado 
     function glassesSwitch(point) {
         if (document.getElementById(point).className != 'selected') {
             if (document.querySelector(".selected") != null) {
@@ -117,13 +118,15 @@
         canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
 
         if (results.faceLandmarks) {
-            //definir pontos do desenho
+            
+            //definir pontos da face para o desenho
             let beginX = results.faceLandmarks[162].x * canvasElement.width;
             let endX = results.faceLandmarks[389].x * canvasElement.width;
             let beginY = results.faceLandmarks[9].y * canvasElement.height;
             let endY = results.faceLandmarks[5].y * canvasElement.height;
 
-            //coletar o ponto em que o dedo indicador se localiza
+            // coletar o ponto em que o dedo indicador se localiza
+            // funciona com as duas mãos, porém a mão direita é prioritaria
             if (results.rightHandLandmarks) {
                 index_finger_tip = results.rightHandLandmarks[8]
                 point = Math.floor((index_finger_tip.y * canvasElement.height) / 102.8);
@@ -132,15 +135,11 @@
                 point = Math.floor((index_finger_tip.y * canvasElement.height) / 102.8);
             }
 
-            // if (results.rightHandLandmarks) {
-            //     index_finger_tip = results.rightHandLandmarks[8]
-            //     point = Math.floor((index_finger_tip.y * canvasElement.height) / 240);
-            // } else if (results.leftHandLandmarks) {
-            //     index_finger_tip = results.leftHandLandmarks[8]
-            //     point = Math.floor((index_finger_tip.y * canvasElement.height) / 240);
-            // }
+            // Defini como area dos oculos aquela acima dos 1030px (averiguei com console.log), 
+            // então se a ponta do dedo indicador ter um valor maior que 1030, breakLoop === false 
+            // e o ponto calculado anteriormente pertence à um óculos, então pode usar o switch e quebrar o looping
 
-            //definindo a area dos oculos e o switch ativador
+            // Se o dedo sair da area dos óculos, então é permitido apontar para algum oculos novamente 
             if ((index_finger_tip != null) && (point != null)) {
                 if (((index_finger_tip.x * canvasElement.width) > 1030) && breakLoop === false && pointsWithGlasses.includes(point)) {
                     glassesSwitch(point)
@@ -150,7 +149,7 @@
                 }
             }
 
-            //desenhar
+            //desenhar caso existir algum óculos selecionado
             let glassesSelected = document.querySelector(".selected")
             if (glassesSelected != null) {
                 canvasCtx.drawImage(glassesSelected, beginX, beginY, endX - beginX, endY - beginY)
