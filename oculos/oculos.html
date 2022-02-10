@@ -127,6 +127,11 @@
 
             // coletar o ponto em que o dedo indicador se localiza
             // funciona com as duas mãos, porém a mão direita é prioritaria
+
+            // Para ativar/desativar o óculos apontando exatamente para a imagem,
+            // eu inseri <div> entre as imagens, totalizando 7 elementos na barra lateral, 
+            // então basta dividir a altura do canvas por 7 e trabalhar apenas com os pontos 
+            // com imagem, por isso existe aquele array no inicio do código.
             if (results.rightHandLandmarks) {
                 index_finger_tip = results.rightHandLandmarks[8]
                 point = Math.floor((index_finger_tip.y * canvasElement.height) / 102.8);
